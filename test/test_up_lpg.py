@@ -6,10 +6,6 @@ from unittest import TestCase
 
 class LPGtest(TestCase):
 
-    def setUp(self) -> None:
-        env = get_env()
-        env.factory.add_solver('lpg', 'up_lpg', 'LPGsolver')
-
     def test_lpg(self):
         Location = UserType('Location')
         robot_at = unified_planning.model.Fluent('robot_at', BoolType(), [Location])
