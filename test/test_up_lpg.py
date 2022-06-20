@@ -1,6 +1,5 @@
 import unified_planning
 from unified_planning.shortcuts import *
-import unified_planning.transformers
 from unittest import TestCase
 
 
