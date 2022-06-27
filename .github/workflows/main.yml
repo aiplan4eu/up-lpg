@@ -1,17 +1,12 @@
 name: CD
 
-on:
-  push:
-    paths:
-      - 'up_lpg/**'
-      - 'setup.py'
-    branches:
-      # Only on master branch
-      - master
+on: push
+
 
 jobs:
   deploy-pypi:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' # We only deploy on master commits
 
     steps:
     - name: Checkout repo
@@ -23,6 +18,7 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: 3.8
+        
     - name: Make distrib
       run: |
         python3 -m pip install wheel
