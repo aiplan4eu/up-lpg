@@ -1,0 +1,36 @@
+name: CD
+
+on:
+  push:
+    paths:
+      - 'up_lpg/**'
+      - 'setup.py'
+    branches:
+      # Only on master branch
+      - master
+
+jobs:
+  deploy-pypi:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@master
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Make distrib
+      run: |
+        python3 -m pip install wheel
+        # Create package files
+        python3 setup.py sdist --format=gztar
+        # Wheel file
+        python3 setup.py bdist_wheel
+    - name: Upload to PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
