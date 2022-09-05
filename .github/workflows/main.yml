@@ -6,20 +6,21 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
 
-  steps:
-    - name: Checkout repo
-    uses: actions/checkout@master
-    with:
-      fetch-depth: 0
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@master
+        with:
+          fetch-depth: 0
 
     - name: Build manylinux Python wheels
-    uses: RalfG/python-wheels-manylinux-build@v0.4.2-manylinux2014_x86_64
-    with:
-      python-version: 'cp36-cp36m cp37-cp37m cp38-cp38m' 
+      uses: RalfG/python-wheels-manylinux-build@v0.4.2-manylinux2014_x86_64
+      with:
+        python-version: 'cp36-cp36m cp37-cp37m cp38-cp38m' 
 
     - uses: actions/upload-artifact@master
-      with: linux-wheel
-      path: dist/*-manylinux*.whl 
+      with: 
+        name: linux-wheel
+        path: dist/*-manylinux*.whl 
 
 jobs:
   deploy-pypi:
