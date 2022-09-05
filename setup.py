@@ -9,7 +9,7 @@ long_description=\
 """
 
 setup(name='up_lpg',
-      version='0.0.1',
+      version='0.0.2',
       description='up_lpg',
       author='UNIBS Team',
       author_email='enrico.scala@unibs.it',
