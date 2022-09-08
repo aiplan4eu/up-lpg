@@ -30,7 +30,7 @@ jobs:
 
     steps:
 
-    - uses: actions/donwload-artifact@master
+    - uses: actions/download-artifact@master
       with:
         name: linux-wheel
         path: dist
