@@ -35,4 +35,7 @@ setup(name='up_lpg',
       package_data={
           "": ["lpg"],
       },
+      cmdclass={
+          'bdist_wheel': bdist_wheel,
+      },
       license='APACHE')
