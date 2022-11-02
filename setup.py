@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import platform
 from setuptools import setup
 
 long_description=\
@@ -7,23 +7,17 @@ long_description=\
     UP_LPG
  ============================================================
 """
-try:
-    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+arch = (platform.system(), platform.machine())
 
-    class bdist_wheel(_bdist_wheel):
+EXECUTABLES = {
+    ("Linux", "x86_64"): "lpg.exe",
+    # ("Windows", "x86_64"): "aries_windows_x86_64.exe",
+    # ("Windows", "aarch64"): "aries_windows_aarch64.exe",
+    # ("Windows", "x86"): "aries_windows_x86.exe",
+    # ("Windows", "aarch32"): "aries_windows_aarch32.exe",
+}
 
-        def finalize_options(self):
-            _bdist_wheel.finalize_options(self)
-            # Mark us as not a pure python package
-            self.root_is_pure = False
-
-        def get_tag(self):
-            python, abi, plat = _bdist_wheel.get_tag(self)
-            # We don't link with python ABI, but require python3
-            python, abi = 'py3', 'none'
-            return python, abi, plat
-except ImportError:
-    bdist_wheel = None
+executable = EXECUTABLES[arch]
 
 
 setup(name='up_lpg',
@@ -32,10 +26,7 @@ setup(name='up_lpg',
       author='UNIBS Team',
       author_email='enrico.scala@unibs.it',
       packages=['up_lpg'],
-      package_data={
-          "": ["lpg"],
-      },
-      cmdclass={
-          'bdist_wheel': bdist_wheel,
-      },
+      package_data={"": [executable]},
+      include_package_data=True,
+    
       license='APACHE')
