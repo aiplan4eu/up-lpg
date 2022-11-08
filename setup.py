@@ -19,6 +19,14 @@ EXECUTABLES = {
 
 executable = EXECUTABLES[arch]
 
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+    class bdist_wheel(_bdist_wheel):
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            self.root_is_pure = False
+except ImportError:
+    bdist_wheel = None
 
 setup(name='up_lpg',
       version='0.0.2',
@@ -28,5 +36,6 @@ setup(name='up_lpg',
       packages=['up_lpg'],
       package_data={"": [executable]},
       include_package_data=True,
+      cmdclass={'bdist_wheel': bdist_wheel},
     
       license='APACHE')
