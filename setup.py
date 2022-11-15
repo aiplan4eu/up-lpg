@@ -2,6 +2,8 @@
 import platform
 from setuptools import setup
 
+print("Hello")
+
 long_description=\
 """============================================================
     UP_LPG
