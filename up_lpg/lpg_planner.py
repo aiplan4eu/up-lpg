@@ -19,7 +19,7 @@ from unified_planning.io.pddl_writer import PDDLWriter
 from unified_planning.exceptions import UPException
 from asyncio.subprocess import PIPE
 from typing import IO, Any, Callable, Optional, List, Tuple, cast
-from unified_planning.engines.pddl_planner import PDDLPlanner, Credits, LogMessage
+from unified_planning.engines import PDDLPlanner, Credits, LogMessage
 
 
 USE_ASYNCIO_ON_UNIX = False
