@@ -3,7 +3,6 @@ import pkg_resources
 import re
 import unified_planning as up
 from unified_planning.model import ProblemKind
-from unified_planning.engines import PDDLPlanner, Credits
 from unified_planning.exceptions import UPException
 import asyncio
 from asyncio.subprocess import PIPE
@@ -51,6 +50,7 @@ class LPGEngine(PDDLPlanner):
 
     def _solve(self, problem: 'up.model.AbstractProblem',
                callback: Optional[Callable[['up.engines.results.PlanGenerationResult'], None]] = None,
+               heuristic: Optional[Callable[["up.model.state.ROState"], Optional[float]]] = None,
                timeout: Optional[float] = None,
                output_stream: Optional[IO[str]] = None) -> 'up.engines.results.PlanGenerationResult':
         assert isinstance(problem, up.model.Problem)
@@ -106,7 +106,7 @@ class LPGEngine(PDDLPlanner):
         status: PlanGenerationResultStatus = self._result_status(problem, plan)
         return PlanGenerationResult(status, plan, log_messages=logs, engine_name=self.name)
 
-    def _get_action_by_name(self, problem, action_name):
+    def _get_action_named(self, problem, action_name):
         '''Takes a problem and a name of an action and returns the action'''
         actions = problem.actions
         res_split = re.split(r'-|_', action_name.group(1).lower())
@@ -114,9 +114,9 @@ class LPGEngine(PDDLPlanner):
             a_split = re.split(r'-|_', a.name.lower())
             if(a_split == res_split):
                 return a
-        raise ValueError
+        raise UPException('Action not found')
         
-    def _get_object_by_name(self, problem, parameter):
+    def _get_object_named(self, problem, parameter):
         '''Takes a problem and a parameter and returns the object'''
         objects = problem.all_objects
         for o in objects: 
@@ -124,7 +124,7 @@ class LPGEngine(PDDLPlanner):
             par_split = re.split(r'-|_', parameter.lower())
             if(o_split == par_split):
                 return o
-        raise ValueError
+        raise UPException('Object not found')
 
     def _plan_from_file(self, problem: 'up.model.Problem', plan_filename: str) -> 'up.plans.Plan':
         '''Takes a problem and a filename and returns the plan parsed from the file.'''
@@ -135,10 +135,10 @@ class LPGEngine(PDDLPlanner):
                     continue
                 res = re.match(r'^\d+:\s*\(\s*([\w?-]+)((\s+[\w?-]+)*)\s*\)\s*\[\d+\]$', line.lower())
                 if res:
-                    action = self._get_action_by_name(problem, res)
+                    action = self._get_action_named(problem, res)
                     parameters = []
                     for p in res.group(2).split():
-                        p_correct = self._get_object_by_name(problem, p)
+                        p_correct = self._get_object_named(problem, p)
                         parameters.append(problem.env.expression_manager.ObjectExp(p_correct))
                     actions.append(up.plans.ActionInstance(action, tuple(parameters)))
                 else:
@@ -203,6 +203,7 @@ class LPGAnytimeEngine(PDDLPlanner):
     
     def _solve(self, problem: 'up.model.AbstractProblem',
                callback: Optional[Callable[['up.engines.results.PlanGenerationResult'], None]] = None,
+               heuristic: Optional[Callable[["up.model.state.ROState"], Optional[float]]] = None,
                timeout: Optional[float] = None,
                output_stream: Optional[IO[str]] = None) -> 'up.engines.results.PlanGenerationResult':
         assert isinstance(problem, up.model.Problem)
@@ -259,7 +260,7 @@ class LPGAnytimeEngine(PDDLPlanner):
         return PlanGenerationResult(status, plan, log_messages=logs, engine_name=self.name)
 
 
-    def _get_action_by_name(self, problem, action_name):
+    def _get_action_named(self, problem, action_name):
         '''Takes a problem and a name of an action and returns the action'''
         actions = problem.actions
         res_split = re.split(r'-|_', action_name.group(1).lower())
@@ -269,7 +270,7 @@ class LPGAnytimeEngine(PDDLPlanner):
                 return a
         raise ValueError
         
-    def _get_object_by_name(self, problem, parameter):
+    def _get_object_named(self, problem, parameter):
         '''Takes a problem and a parameter and returns the object'''
         objects = problem.all_objects
         for o in objects: 
@@ -288,10 +289,10 @@ class LPGAnytimeEngine(PDDLPlanner):
                     continue
                 res = re.match(r'^\d+:\s*\(\s*([\w?-]+)((\s+[\w?-]+)*)\s*\)\s*\[\d+\]$', line.lower())
                 if res:
-                    action = self._get_action_by_name(problem, res)
+                    action = self._get_action_named(problem, res)
                     parameters = []
                     for p in res.group(2).split():
-                        p_correct = self._get_object_by_name(problem, p)
+                        p_correct = self._get_object_named(problem, p)
                         parameters.append(problem.env.expression_manager.ObjectExp(p_correct))
                     actions.append(up.plans.ActionInstance(action, tuple(parameters)))
                 else:
