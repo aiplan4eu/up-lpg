@@ -23,7 +23,7 @@ jobs:
   deploy-pypi:
       runs-on: ubuntu-latest
       needs: build-linux
-      if: github.ref == 'refs/heads/main' && needs.build-linux.result == 'success' # We only deploy on master commits
+      if: github.ref == 'refs/heads/main' # We only deploy on master commits
 
       steps:
         - uses: actions/download-artifact@master
