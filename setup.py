@@ -2,11 +2,8 @@
 import platform
 from setuptools import setup, find_packages , Distribution
 
-long_description=\
-"""============================================================
-    UP_LPG
- ============================================================
-"""
+long_description= " UP_LPG "
+ 
 arch = (platform.system(), platform.machine())
 
 EXECUTABLES = {
