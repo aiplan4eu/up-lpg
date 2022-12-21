@@ -2,8 +2,11 @@
 import platform
 from setuptools import setup, find_packages , Distribution
 
-long_description= " UP_LPG "
- 
+long_description=\
+"""============================================================
+    UP_LPG
+ ============================================================
+"""
 arch = (platform.system(), platform.machine())
 
 EXECUTABLES = {
@@ -38,6 +41,7 @@ class BinaryDistribution(Distribution):
 setup(name='up_lpg',
       version='0.0.2.19',
       description='up_lpg',
+      long_description=long_description,
       author='UNIBS Team',
       author_email='enrico.scala@unibs.it',
       packages=["up_lpg"],
