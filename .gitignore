@@ -3,3 +3,6 @@ build/
 *.pyc
 *.egg-info
 .vscode/
+.venv
+dist/
+wheelhouse/

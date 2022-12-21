@@ -7,35 +7,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@master
-        
 
-      - name: Build manylinux Python wheels
+      - name: Build manylinux Python wheels 
         uses: RalfG/python-wheels-manylinux-build@v0.4.2-manylinux2014_x86_64
         with:
-          python-versions: 'cp36-cp36m cp37-cp37m cp38-cp38'
+          python-versions: 'cp37-cp37m'
 
       - uses: actions/upload-artifact@master
         with:
           name: linux-wheel
           path: dist/*-manylinux*.whl
-
-
+          
   deploy-pypi:
       runs-on: ubuntu-latest
-      needs: [build-linux]
-      if: github.ref == 'refs/heads/main' # We only deploy on master commits
+      needs: build-linux
+      if: github.ref == 'refs/heads/main' && needs.build-linux.result == 'success' # We only deploy on master commits
 
       steps:
         - uses: actions/download-artifact@master
           with:
             name: linux-wheel
             path: dist
-        
+
         - run: ls dist
 
         - name: Upload to PyPI
           uses: pypa/gh-action-pypi-publish@master
           with:
+            user: __token__
             password: ${{ secrets.PYPI_API_TOKEN }}
+
+
+
+
+            
