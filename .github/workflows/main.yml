@@ -3,7 +3,7 @@ name: Deploy
 on: push
 
 jobs:
-  build-win-and-mac:
+  build-win:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -13,7 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Used to host cibuildwheel
       - uses: actions/setup-python@v3
 
       - name: Install cibuildwheel
@@ -21,13 +20,10 @@ jobs:
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir dist
-        # to supply options, put them in 'env', like:
-        # env:
-        #   CIBW_SOME_OPTION: value
 
       - uses: actions/upload-artifact@v3
         with:
-          name: windows-mac-wheels
+          name: windows-wheels
           path: dist/*.whl
 
   build-linux:
@@ -49,16 +45,25 @@ jobs:
           
   deploy-pypi:
       runs-on: ubuntu-latest
-      needs: [build-linux, build-win-and-mac]
+      needs: build-linux
       if: github.ref == 'refs/heads/master' # We only deploy on master commits
 
       steps:
+        - name: Make distrib
+          run: |
+            python3 -m pip install wheel
+            cd up-lpg
+            ls
+            bash make_distrib.sh
+
         - uses: actions/download-artifact@master
           with:
             name: linux-wheel
             path: dist
-
-        - run: ls dist
+        # - uses: actions/download-artifact@master
+        #   with:
+        #     name: windows-wheels
+        #     path: dist
 
         - name: Upload to PyPI
           uses: pypa/gh-action-pypi-publish@master
