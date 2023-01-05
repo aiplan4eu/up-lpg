@@ -1,6 +1,9 @@
 name: Deploy
 
 on: push
+  paths:
+    - 'up_lpg/**'
+    - 'setup.py'
 
 jobs:
   build-win:
@@ -8,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-2022]
+        os: [windows]
 
     steps:
       - uses: actions/checkout@v3
@@ -52,18 +55,16 @@ jobs:
         - name: Make distrib
           run: |
             python3 -m pip install wheel
-            cd up-lpg
-            ls
-            bash make_distrib.sh
-
+            python3 setup.py sdist --format=gztar
+            python3 setup.py bdist_wheel
         - uses: actions/download-artifact@master
           with:
             name: linux-wheel
             path: dist
-        # - uses: actions/download-artifact@master
-        #   with:
-        #     name: windows-wheels
-        #     path: dist
+        - uses: actions/download-artifact@master
+          with:
+            name: windows-wheels
+            path: dist
 
         - name: Upload to PyPI
           uses: pypa/gh-action-pypi-publish@master
