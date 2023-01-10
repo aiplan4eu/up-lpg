@@ -36,7 +36,7 @@ jobs:
       - name: Build manylinux Python wheels 
         uses: RalfG/python-wheels-manylinux-build@v0.4.2-manylinux2014_x86_64
         with:
-          python-versions: 'cp37-cp37m'
+          python-versions: 'cp37-cp37m cp38-cp38 cp39-cp39 cp310-cp310'
 
       - uses: actions/upload-artifact@master
         with:
@@ -54,10 +54,10 @@ jobs:
           with:
             fetch-depth: 0
 
-        - name: Set up Python 3.7
+        - name: Set up Python 3.8
           uses: actions/setup-python@v1
           with:
-            python-version: 3.7
+            python-version: 3.8
 
         - name: Make distrib
           run: |
