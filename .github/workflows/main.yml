@@ -54,15 +54,15 @@ jobs:
           with:
             fetch-depth: 0
 
+        - name: Set up Python 3.7
+          uses: actions/setup-python@v1
+          with:
+            python-version: 3.7
+
         - name: Set up Python 3.8
           uses: actions/setup-python@v1
           with:
             python-version: 3.8
-
-        - name: Make distrib
-          run: |
-            python3 -m pip install wheel
-            bash make_distrib.sh
 
         - uses: actions/download-artifact@master
           with:
