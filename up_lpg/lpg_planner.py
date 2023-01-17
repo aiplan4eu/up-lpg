@@ -105,15 +105,24 @@ class LPGEngine(PDDLPlanner):
 
 class LPGAnytimeEngine(PDDLPlanner, AnytimePlannerMixin):
 
+    
+
     def __init__(self):
+        self.cputime = 1200
         super().__init__(needs_requirements=False)
+    
 
     @staticmethod
     def name() -> str:
         return 'lpg'
 
     def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
-        base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]), '-o', domain_filename, '-f', problem_filename, '-n', '10', '-out', plan_filename]
+        base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]),
+        '-o', domain_filename,
+        '-f', problem_filename,
+        '-n', '10',
+        '-out', plan_filename,
+        '-cputime', self.cputime ]
         return base_command
 
     def _plan_from_file(self, problem: 'up.model.Problem', plan_filename: str, get_item_named: Callable[[str],
@@ -164,6 +173,9 @@ class LPGAnytimeEngine(PDDLPlanner, AnytimePlannerMixin):
         timeout: Optional[float] = None,
         output_stream: Optional[IO[str]] = None,
         )-> Iterator["up.engines.results.PlanGenerationResult"]:
+
+        if timeout is not None:
+            self.cputime = timeout
         return super()._get_solutions(problem, timeout, output_stream)
 
     @staticmethod
