@@ -3,7 +3,7 @@ import re
 import sys
 import unified_planning as up
 from unified_planning.model import ProblemKind
-from unified_planning.engines.results import PlanGenerationResultStatus
+from unified_planning.engines import PlanGenerationResult, PlanGenerationResultStatus
 from unified_planning.engines import PDDLPlanner, Credits, LogMessage
 from unified_planning.exceptions import UPException
 from unified_planning.engines.mixins import AnytimePlannerMixin
@@ -21,7 +21,7 @@ lpg_os = {'win32':'winlpg.exe',
           'linux': 'lpg'}
 
 class LPGEngine(PDDLPlanner):
-
+    
     def __init__(self):
         super().__init__(needs_requirements=False)
 
@@ -44,7 +44,7 @@ class LPGEngine(PDDLPlanner):
             ],
         ],) -> 'up.plans.Plan':
         '''Takes a problem and a filename and returns the plan parsed from the file.'''
-        actions = []
+        actions = []    
         with open(plan_filename) as plan:
             for line in plan.readlines():
                 if re.match(r'^\s*(;.*)?$', line):
@@ -75,7 +75,6 @@ class LPGEngine(PDDLPlanner):
         else:
             return PlanGenerationResultStatus.SOLVED_SATISFICING
     
-
     @staticmethod
     def supported_kind() -> 'ProblemKind':
         supported_kind = ProblemKind()
@@ -90,6 +89,7 @@ class LPGEngine(PDDLPlanner):
         supported_kind.set_effects_kind('INCREASE_EFFECTS')  # type: ignore
         supported_kind.set_effects_kind('DECREASE_EFFECTS')
         supported_kind.set_time('CONTINUOUS_TIME')  # type: ignore
+        supported_kind.set_quality_metrics("PLAN_LENGTH") # type: ignore
         supported_kind.set_expression_duration('STATIC_FLUENTS_IN_DURATION')  # type: ignore
         return supported_kind
 
@@ -101,28 +101,21 @@ class LPGEngine(PDDLPlanner):
     def get_credits(**kwargs) -> Optional['Credits']:
         return credits
 
-
-
 class LPGAnytimeEngine(PDDLPlanner, AnytimePlannerMixin):
-
-    
-
     def __init__(self):
-        self.cputime = 1200
         super().__init__(needs_requirements=False)
+        self._options = []
     
-
     @staticmethod
     def name() -> str:
-        return 'lpg'
+        return 'lpg-anytime'
 
     def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
         base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]),
         '-o', domain_filename,
         '-f', problem_filename,
-        '-n', '10',
-        '-out', plan_filename,
-        '-cputime', self.cputime ]
+        '-n', '1000',
+        '-noout'] + self._options
         return base_command
 
     def _plan_from_file(self, problem: 'up.model.Problem', plan_filename: str, get_item_named: Callable[[str],
@@ -172,12 +165,69 @@ class LPGAnytimeEngine(PDDLPlanner, AnytimePlannerMixin):
         problem: "up.model.AbstractProblem",
         timeout: Optional[float] = None,
         output_stream: Optional[IO[str]] = None,
-        )-> Iterator["up.engines.results.PlanGenerationResult"]:
+    ) -> Iterator["up.engines.results.PlanGenerationResult"]:
+        import threading
+        import queue
+
+        q: queue.Queue = queue.Queue()
 
         if timeout is not None:
-            self.cputime = timeout
-        return super()._get_solutions(problem, timeout, output_stream)
+            self._options.extend(['-cputime', str(timeout)])
+        else:
+            self._options.extend(['-cputime', '4'])
 
+        class Writer(up.AnyBaseClass):
+            def __init__(self, os, q, engine):
+                self._os = os
+                self._q = q
+                self._engine = engine
+                self._plan = []
+                self._storing = False
+
+            def write(self, txt: str):
+                if self._os is not None:
+                    self._os.write(txt)
+                for l in txt.splitlines():
+                    if "   Time: (ACTION) [action Duration; action Cost]" in l:
+                        self._storing = True
+                    elif "METRIC_VALUE" in l:
+                        plan_str = "\n".join(self._plan)
+                        plan = self._engine._plan_from_str(
+                            problem, plan_str, self._engine._writer.get_item_named
+                        )
+                        res = PlanGenerationResult(
+                            PlanGenerationResultStatus.INTERMEDIATE,
+                            plan=plan,
+                            engine_name=self._engine.name,
+                        )
+                        self._q.put(res)
+                        self._plan = []
+                        self._storing = False
+                    elif self._storing and l:
+                        self._plan.append(l.split(":")[1].split('[')[0])
+
+        def run():
+            writer: IO[str] = Writer(output_stream, q, self)
+            res = self._solve(problem, output_stream=writer)
+            q.put(res)
+
+        try:
+            t = threading.Thread(target=run, daemon=True)
+            t.start()
+            status = PlanGenerationResultStatus.INTERMEDIATE
+            while status == PlanGenerationResultStatus.INTERMEDIATE:
+                res = q.get()
+                status = res.status
+                yield res
+        finally:
+            if self._process is not None:
+                try:
+                    self._process.kill()
+                except OSError:
+                    pass  # This can happen if the process is already terminated
+            t.join()
+
+        
     @staticmethod
     def supported_kind() -> 'ProblemKind':
         supported_kind = ProblemKind()
@@ -192,13 +242,24 @@ class LPGAnytimeEngine(PDDLPlanner, AnytimePlannerMixin):
         supported_kind.set_effects_kind('INCREASE_EFFECTS')  # type: ignore
         supported_kind.set_effects_kind('DECREASE_EFFECTS')
         supported_kind.set_time('CONTINUOUS_TIME')  # type: ignore
+        supported_kind.set_quality_metrics("PLAN_LENGTH") # type: ignore
         supported_kind.set_expression_duration('STATIC_FLUENTS_IN_DURATION')  # type: ignore
         return supported_kind
 
     @staticmethod
     def supports(problem_kind: 'ProblemKind') -> bool:
         return problem_kind <= LPGEngine.supported_kind()
-
+    
     @staticmethod
     def get_credits(**kwargs) -> Optional['Credits']:
         return credits
+    
+    @staticmethod
+    def satisfies(optimality_guarantee: up.engines.OptimalityGuarantee) -> bool:
+        return True
+
+    @staticmethod
+    def ensures(anytime_guarantee: up.engines.AnytimeGuarantee) -> bool:
+        if anytime_guarantee == up.engines.AnytimeGuarantee.INCREASING_QUALITY:
+            return True
+        return False
