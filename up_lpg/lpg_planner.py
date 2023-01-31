@@ -35,12 +35,12 @@ class LPGEngine(PDDLPlanner):
 
     def _plan_from_file(self, problem: 'up.model.Problem', plan_filename: str, get_item_named: Callable[[str],
             Union[
-                "up.model.Type",
-                "up.model.Action",
-                "up.model.Fluent",
-                "up.model.Object",
-                "up.model.Parameter",
-                "up.model.Variable",
+                'up.model.Type',
+                'up.model.Action',
+                'up.model.Fluent',
+                'up.model.Object',
+                'up.model.Parameter',
+                'up.model.Variable',
             ],
         ],) -> 'up.plans.Plan':
         '''Takes a problem and a filename and returns the plan parsed from the file.'''
@@ -89,7 +89,7 @@ class LPGEngine(PDDLPlanner):
         supported_kind.set_effects_kind('INCREASE_EFFECTS')  # type: ignore
         supported_kind.set_effects_kind('DECREASE_EFFECTS')  # type: ignore
         supported_kind.set_time('CONTINUOUS_TIME')  # type: ignore
-        supported_kind.set_quality_metrics("PLAN_LENGTH") # type: ignore
+        supported_kind.set_quality_metrics('PLAN_LENGTH') # type: ignore
         supported_kind.set_expression_duration('STATIC_FLUENTS_IN_DURATION')  # type: ignore
         return supported_kind
 
@@ -122,10 +122,10 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
     
     def _get_solutions(
         self,
-        problem: "up.model.AbstractProblem",
+        problem: 'up.model.AbstractProblem',
         timeout: Optional[float] = None,
         output_stream: Optional[IO[str]] = None,
-    ) -> Iterator["up.engines.results.PlanGenerationResult"]:
+    ) -> Iterator['up.engines.results.PlanGenerationResult']:
         import threading
         import queue
 
@@ -148,10 +148,10 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
                 if self._os is not None:
                     self._os.write(txt)
                 for l in txt.splitlines():
-                    if "   Time: (ACTION) [action Duration; action Cost]" in l:
+                    if '   Time: (ACTION) [action Duration; action Cost]' in l:
                         self._storing = True
-                    elif "METRIC_VALUE" in l or "Solution number:" in l:
-                        plan_str = "\n".join(self._plan)
+                    elif 'METRIC_VALUE' in l or 'Solution number:' in l and self._storing:
+                        plan_str = '\n'.join(self._plan)
                         plan = self._engine._plan_from_str(
                             problem, plan_str, self._engine._writer.get_item_named
                         )
@@ -164,7 +164,7 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
                         self._plan = []
                         self._storing = False
                     elif self._storing and l:
-                        self._plan.append(l.split(":")[1].split('[')[0])
+                        self._plan.append(l.split(':')[1].split('[')[0])
 
         def run():
             writer: IO[str] = Writer(output_stream, q, self)

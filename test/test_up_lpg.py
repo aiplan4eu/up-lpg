@@ -19,7 +19,6 @@ class LPGtest(TestCase):
         move.add_precondition(robot_at(l_from))
         move.add_effect(robot_at(l_from), False)
         move.add_effect(robot_at(l_to), True)
-        print(move)
         
         problem = unified_planning.model.Problem('robot')
         problem.add_fluent(robot_at, default_initial_value=False)
@@ -34,13 +33,8 @@ class LPGtest(TestCase):
         for i in range(NLOC - 1):
             problem.set_initial_value(connected(locations[i], locations[i+1]), True)
 
-
         problem.add_goal(robot_at(locations[-1]))
-        print(problem)       
 
         with OneshotPlanner(name='lpg') as planner:
             result = planner.solve(problem)
-            if result.status == up.engines.PlanGenerationResultStatus.SOLVED_SATISFICING:
-                print("Lpg returned: %s" % result.plan)
-            else:
-                print("No plan found.")
+            self.assertEqual(result.status.name, 'SOLVED_SATISFICING')
