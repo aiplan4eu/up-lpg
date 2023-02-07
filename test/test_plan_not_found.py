@@ -12,9 +12,11 @@ problem_filename = sys.path[0] + "/pddl/sailing_3_3_1229.pddl"
 
 problem = reader.parse_problem(domain_filename,problem_filename)
 
+
+
+
 with OneshotPlanner(name='lpg') as planner:
             result = planner.solve(problem)
-            print (result)
             if result.status == up.engines.PlanGenerationResultStatus.SOLVED_SATISFICING:
                 print("Lpg returned: %s" % result.plan)
             else:
