@@ -1,0 +1,21 @@
+import unified_planning
+from unified_planning.shortcuts import *
+from unified_planning.io.pddl_reader import PDDLReader
+from unittest import TestCase
+
+
+
+reader = PDDLReader()
+domain_filename = sys.path[0] + "/rovers_domain.pddl"
+problem_filename = sys.path[0] + "/rovers_pfile1.pddl"
+
+problem = reader.parse_problem(domain_filename,problem_filename)
+problem.add_quality_metric(MinimizeSequentialPlanLength())
+
+with AnytimePlanner(name="lpg-anytime", anytime_guarantee="INCREASING_QUALITY") as planner:
+    if planner.supports(problem.kind) and planner.is_anytime_planner():
+               solutions = []
+               for p in planner.get_solutions(problem,4):
+                if p.plan is not None:
+                    solutions.append(p.plan)
+                    print(p.plan)
