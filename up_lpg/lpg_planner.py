@@ -81,6 +81,7 @@ class LPGEngine(PDDLPlanner):
         supported_kind.set_problem_class('ACTION_BASED')  # type: ignore
         supported_kind.set_numbers('CONTINUOUS_NUMBERS')  # type: ignore
         supported_kind.set_problem_type('SIMPLE_NUMERIC_PLANNING')  # type: ignore
+        supported_kind.set_problem_type("GENERAL_NUMERIC_PLANNING")  # type: ignore
         supported_kind.set_typing('FLAT_TYPING')  # type: ignore
         supported_kind.set_typing('HIERARCHICAL_TYPING')  # type: ignore
         supported_kind.set_fluents_type('NUMERIC_FLUENTS')  # type: ignore
