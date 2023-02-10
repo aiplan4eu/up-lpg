@@ -39,7 +39,7 @@ class BinaryDistribution(Distribution):
         return False
 
 setup(name='up_lpg',
-      version='0.0.4.6',
+      version='0.0.4.7',
       description='up_lpg',
       long_description=long_description,
       long_description_content_type ="text/markdown",
