@@ -55,7 +55,7 @@ class LPGEngine(PDDLPlanner):
                     parameters = []
                     for p in res.group(2).split():
                         p_correct = get_item_named(p)
-                        parameters.append(problem.environment.expression_manager.ObjectExp(p_correct))
+                        parameters.append(problem.env.expression_manager.ObjectExp(p_correct))
                     actions.append(up.plans.ActionInstance(action, tuple(parameters)))
                 elif re.match(r'no solution', line):
                     return None
