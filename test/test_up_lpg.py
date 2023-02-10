@@ -51,8 +51,8 @@ class LPGtest(TestCase):
         problem_filename = sys.path[0] + '/pddl/rovers_pfile1.pddl'
         problem = reader.parse_problem(domain_filename,problem_filename)
         problem.add_quality_metric(MinimizeSequentialPlanLength())
-        problem.env.factory.add_engine(name = "lpg-anytime", module_name = "up_lpg.lpg_planner", class_name = "LPGAnytimeEngine")
-        
+        problem.environment.factory.add_engine(name = "lpg-anytime", module_name = "up_lpg.lpg_planner", class_name = "LPGAnytimeEngine")
+
         with AnytimePlanner(name='lpg-anytime') as planner:
                 solutions = []
                 for p in planner.get_solutions(problem,4):

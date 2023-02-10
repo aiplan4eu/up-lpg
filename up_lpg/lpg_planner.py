@@ -17,11 +17,11 @@ credits = Credits('LPG',
                   'LPG is a planner based on local search and planning graphs.',
                   'LPG (Local search for Planning Graphs) is a planner based on local search and planning graphs.')
 
-lpg_os = {'win32':'winlpg.exe', 
+lpg_os = {'win32':'winlpg.exe',
           'linux': 'lpg'}
 
 class LPGEngine(PDDLPlanner):
-    
+
     def __init__(self):
         super().__init__(needs_requirements=False)
 
@@ -44,7 +44,7 @@ class LPGEngine(PDDLPlanner):
             ],
         ],) -> 'up.plans.Plan':
         '''Takes a problem and a filename and returns the plan parsed from the file.'''
-        actions = []    
+        actions = []
         with open(plan_filename) as plan:
             for line in plan.readlines():
                 if re.match(r'^\s*(;.*)?$', line):
@@ -55,7 +55,7 @@ class LPGEngine(PDDLPlanner):
                     parameters = []
                     for p in res.group(2).split():
                         p_correct = get_item_named(p)
-                        parameters.append(problem.env.expression_manager.ObjectExp(p_correct))
+                        parameters.append(problem.environment.expression_manager.ObjectExp(p_correct))
                     actions.append(up.plans.ActionInstance(action, tuple(parameters)))
                 elif re.match(r'no solution', line):
                     return None
@@ -76,7 +76,7 @@ class LPGEngine(PDDLPlanner):
             return PlanGenerationResultStatus.UNSOLVABLE_INCOMPLETELY
         else:
             return PlanGenerationResultStatus.SOLVED_SATISFICING
-        
+
     @staticmethod
     def supported_kind() -> 'ProblemKind':
         supported_kind = ProblemKind()
@@ -109,7 +109,7 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
     def __init__(self):
         super().__init__()
         self._options = []
-    
+
     @property
     def name(self) -> str:
         return 'lpg-anytime'
@@ -122,7 +122,7 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
         '-noout'] + self._options
         return base_command
 
-    
+
     def _get_solutions(
         self,
         problem: 'up.model.AbstractProblem',
