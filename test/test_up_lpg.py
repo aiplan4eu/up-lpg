@@ -28,6 +28,7 @@ class LPGtest(TestCase):
         for i in range(NLOC - 1):
             problem.set_initial_value(connected(locations[i], locations[i+1]), True)
         problem.add_goal(robot_at(locations[-1]))
+        problem.environment.factory.add_engine(name = "lpg", module_name = "up_lpg.lpg_planner", class_name = "LPGEngine")
 
         with OneshotPlanner(name='lpg') as planner:
             result = planner.solve(problem)
@@ -39,6 +40,7 @@ class LPGtest(TestCase):
         domain_filename = sys.path[0] + "/pddl/sailing_domain.pddl"
         problem_filename = sys.path[0] + "/pddl/sailing_3_3_1229.pddl"
         problem = reader.parse_problem(domain_filename,problem_filename)
+        problem.environment.factory.add_engine(name = "lpg", module_name = "up_lpg.lpg_planner", class_name = "LPGEngine")
 
         with OneshotPlanner(name='lpg') as planner:
             result = planner.solve(problem)
@@ -50,7 +52,7 @@ class LPGtest(TestCase):
         domain_filename = sys.path[0] + '/pddl/rovers_domain.pddl'
         problem_filename = sys.path[0] + '/pddl/rovers_pfile1.pddl'
         problem = reader.parse_problem(domain_filename,problem_filename)
-        problem.add_quality_metric(MinimizeSequentialPlanLength())
+        problem.add_quality_metric(up.model.metrics.MinimizeSequentialPlanLength())
         problem.environment.factory.add_engine(name = "lpg-anytime", module_name = "up_lpg.lpg_planner", class_name = "LPGAnytimeEngine")
 
         with AnytimePlanner(name='lpg-anytime') as planner:
