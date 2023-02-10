@@ -49,7 +49,7 @@ class LPGEngine(PDDLPlanner):
             for line in plan.readlines():
                 if re.match(r'^\s*(;.*)?$', line):
                     continue
-                res = re.match(r'^\d+:\s*\(\s*([\w?-]+)((\s+[\w?-]+)*)\s*\)\s*\[\d+\]$', line.lower())
+                res = re.match(r'^[\d.]+:\s*\(\s*([\w?-]+)((\s+[\w?-]+)*)\s*\)\s*\[.*\]$', line.lower())
                 if res:
                     action = get_item_named(res.group(1))
                     parameters = []
