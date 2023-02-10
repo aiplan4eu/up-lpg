@@ -122,7 +122,6 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
         '-noout'] + self._options
         return base_command
 
-
     def _get_solutions(
         self,
         problem: 'up.model.AbstractProblem',
