@@ -1,14 +1,16 @@
 import pkg_resources
 import re
+import os
 import sys
+import tempfile
 import unified_planning as up
-from unified_planning.model import ProblemKind
+from unified_planning.model import ProblemKind, AbstractProblem
+from unified_planning.plans import PlanKind, Plan
 from unified_planning.engines import PlanGenerationResult, PlanGenerationResultStatus
-from unified_planning.engines import PDDLPlanner, Credits, LogMessage
+from unified_planning.engines import PDDLPlanner, Credits, LogMessage, PlanGenerationResult
 from unified_planning.exceptions import UPException
 from unified_planning.engines.mixins import AnytimePlannerMixin
 from unified_planning.engines.mixins.plan_repairer import PlanRepairerMixin
-from unified_planning.engines import OptimalityGuarantee
 from typing import Callable, Optional, List, Union, Iterator, IO
 
 credits = Credits('LPG',
@@ -26,13 +28,14 @@ class LPGEngine(PDDLPlanner):
 
     def __init__(self):
         super().__init__(needs_requirements=False)
+        self._options = []
 
     @property
     def name(self) -> str:
         return 'lpg'
 
     def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
-        base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]), '-o', domain_filename, '-f', problem_filename, '-n', '1', '-out', plan_filename]
+        base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]), '-o', domain_filename, '-f', problem_filename, '-n', '1', '-out', plan_filename]  + self._options
         return base_command
 
     def _plan_from_file(self, problem: 'up.model.Problem', plan_filename: str, get_item_named: Callable[[str],
@@ -206,20 +209,21 @@ class LPGPlanRepairer(LPGEngine, PlanRepairerMixin):
 
     @property
     def name(self) -> str:
-        return 'lpg-plan_repairer'
+        return 'lpg-repairer'
+   
+    def _repair(self, problem: AbstractProblem, plan: Plan) -> PlanGenerationResult:
+        with tempfile.TemporaryDirectory() as tempdir:
+            plan_to_repair_filename = os.path.join(tempdir, "plan_to_repair.SOL")
+            self.plan_to_file(plan, plan_to_repair_filename)
+            self._options.extend(['-input_plan', plan_to_repair_filename])
+            return self.solve(problem)     
+        
+    def plan_to_file(self, plan: Plan, out: IO[str]):
+        with open(out, "w") as f:
+            for i, act in enumerate(plan.actions):
+                parameters = str(act.actual_parameters).replace('(','').replace(')','').replace(',','')
+                f.write(f'{i}:   ({act.action.name} {parameters})  [1]\n')
 
-    def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
-        base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]),
-        '-o', domain_filename,
-        '-f', problem_filename,
-        '-n', '1',
-        '-input_plan', plan_filename] + self._options
-        return base_command
-    
     @staticmethod
     def supports_plan(plan_kind: "up.plans.PlanKind") -> bool:
-        return super().supports_plan(plan_kind)
-    
-    @staticmethod
-    def satisfies(optimality_guarantee: OptimalityGuarantee) -> bool:
-        return super().satisfies(optimality_guarantee)
+        return plan_kind == PlanKind.SEQUENTIAL_PLAN

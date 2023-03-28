@@ -62,3 +62,32 @@ class LPGtest(TestCase):
                         solutions.append(p.plan)
                         self.assertEqual(p.status.name, 'INTERMEDIATE')
                 self.assertTrue(len(solutions) >= 1)
+
+
+    def test_plan_repair(self):
+        reader = PDDLReader()
+        domain_filename = sys.path[0] + '/pddl/plan_repair/rovers_domain.pddl'
+        problem_filename = sys.path[0] + '/pddl/plan_repair/rovers_pfile3.pddl'
+        bad_plan_filename = sys.path[0] + '/pddl/plan_repair/plan_p.SOL'
+        problem = reader.parse_problem(domain_filename, problem_filename)
+
+        w = PDDLWriter(problem, False)
+        w.write_domain(domain_filename)
+        w.write_problem(problem_filename)
+
+        with OneshotPlanner(name='lpg') as planner:
+            bad_plan = planner._plan_from_file(problem, bad_plan_filename, w.get_item_named)
+            with PlanValidator(problem_kind=problem.kind, plan_kind=bad_plan.kind) as validator:
+                res = validator.validate(problem, bad_plan)
+                self.assertEqual(res.status, up.engines.ValidationResultStatus.INVALID)
+
+        problem.environment.factory.add_engine(name = "lpg-repairer", module_name = "up_lpg.lpg_planner", class_name = "LPGPlanRepairer")
+
+        with PlanRepairer(name='lpg-repairer') as repairer:
+            new_plan = repairer.repair(problem, bad_plan).plan
+            with PlanValidator(problem_kind=problem.kind, plan_kind=new_plan.kind) as validator:
+                res = validator.validate(problem, new_plan)
+                self.assertEqual(res.status, up.engines.ValidationResultStatus.VALID)
+
+
+
