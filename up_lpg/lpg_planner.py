@@ -7,6 +7,8 @@ from unified_planning.engines import PlanGenerationResult, PlanGenerationResultS
 from unified_planning.engines import PDDLPlanner, Credits, LogMessage
 from unified_planning.exceptions import UPException
 from unified_planning.engines.mixins import AnytimePlannerMixin
+from unified_planning.engines.mixins.plan_repairer import PlanRepairerMixin
+from unified_planning.engines import OptimalityGuarantee
 from typing import Callable, Optional, List, Union, Iterator, IO
 
 credits = Credits('LPG',
@@ -194,3 +196,30 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
         if anytime_guarantee == up.engines.AnytimeGuarantee.INCREASING_QUALITY:
             return True
         return False
+
+
+class LPGPlanRepairer(LPGEngine, PlanRepairerMixin):
+
+    def __init__(self):
+        super().__init__()
+        self._options = []
+
+    @property
+    def name(self) -> str:
+        return 'lpg-plan_repairer'
+
+    def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
+        base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]),
+        '-o', domain_filename,
+        '-f', problem_filename,
+        '-n', '1',
+        '-input_plan', plan_filename] + self._options
+        return base_command
+    
+    @staticmethod
+    def supports_plan(plan_kind: "up.plans.PlanKind") -> bool:
+        return super().supports_plan(plan_kind)
+    
+    @staticmethod
+    def satisfies(optimality_guarantee: OptimalityGuarantee) -> bool:
+        return super().satisfies(optimality_guarantee)
