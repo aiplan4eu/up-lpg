@@ -37,6 +37,9 @@ class LPGEngine(PDDLPlanner):
     def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
         base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]), '-o', domain_filename, '-f', problem_filename, '-n', '1', '-out', plan_filename]  + self._options
         return base_command
+    
+    def  _get_engine_epsilon(self, new_epsilon:float):
+        self._options.extend(['-t', str(new_epsilon)])
 
     def _plan_from_file(self, problem: 'up.model.Problem', plan_filename: str, get_item_named: Callable[[str],
             Union[
