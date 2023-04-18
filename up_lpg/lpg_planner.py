@@ -40,7 +40,7 @@ class LPGEngine(PDDLPlanner):
     def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
         base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]), '-o', domain_filename, '-f', problem_filename, '-n', '1', '-out', plan_filename]  + self._options
         return base_command
-    
+
     def  _get_engine_epsilon(self) -> Optional[Fraction]:
         return LPG_EPSILON
 
@@ -98,13 +98,15 @@ class LPGEngine(PDDLPlanner):
         supported_kind.set_typing('FLAT_TYPING')  # type: ignore
         supported_kind.set_typing('HIERARCHICAL_TYPING')  # type: ignore
         supported_kind.set_fluents_type('NUMERIC_FLUENTS')  # type: ignore
-        supported_kind.set_conditions_kind('EQUALITY')  # type: ignore
+        supported_kind.set_conditions_kind('EQUALITIES')  # type: ignore
         supported_kind.set_numbers('DISCRETE_NUMBERS')  # type: ignore
         supported_kind.set_effects_kind('INCREASE_EFFECTS')  # type: ignore
         supported_kind.set_effects_kind('DECREASE_EFFECTS')  # type: ignore
+        supported_kind.set_effects_kind('STATIC_FLUENTS_IN_NUMERIC_ASSIGNMENTS')  # type: ignore
+        supported_kind.set_effects_kind('FLUENTS_IN_NUMERIC_ASSIGNMENTS')  # type: ignore
         supported_kind.set_time('CONTINUOUS_TIME')  # type: ignore
         supported_kind.set_quality_metrics('PLAN_LENGTH') # type: ignore
-        supported_kind.set_expression_duration('STATIC_FLUENTS_IN_DURATION')  # type: ignore
+        supported_kind.set_expression_duration('STATIC_FLUENTS_IN_DURATIONS')  # type: ignore
         return supported_kind
 
     @staticmethod
@@ -216,14 +218,14 @@ class LPGPlanRepairer(LPGEngine, PlanRepairerMixin):
     @property
     def name(self) -> str:
         return 'lpg-repairer'
-   
+
     def _repair(self, problem: AbstractProblem, plan: Plan) -> PlanGenerationResult:
         with tempfile.TemporaryDirectory() as tempdir:
             plan_to_repair_filename = os.path.join(tempdir, "plan_to_repair.SOL")
             self.plan_to_file(plan, plan_to_repair_filename)
             self._options.extend(['-input_plan', plan_to_repair_filename])
-            return self.solve(problem)     
-        
+            return self.solve(problem)
+
     def plan_to_file(self, plan: Plan, out: IO[str]):
         with open(out, "w") as f:
             for i, act in enumerate(plan.actions):
