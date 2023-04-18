@@ -102,8 +102,6 @@ class LPGEngine(PDDLPlanner):
         supported_kind.set_numbers('DISCRETE_NUMBERS')  # type: ignore
         supported_kind.set_effects_kind('INCREASE_EFFECTS')  # type: ignore
         supported_kind.set_effects_kind('DECREASE_EFFECTS')  # type: ignore
-        supported_kind.set_effects_kind('STATIC_FLUENTS_IN_NUMERIC_ASSIGNMENTS')  # type: ignore
-        supported_kind.set_effects_kind('FLUENTS_IN_NUMERIC_ASSIGNMENTS')  # type: ignore
         supported_kind.set_time('CONTINUOUS_TIME')  # type: ignore
         supported_kind.set_quality_metrics('PLAN_LENGTH') # type: ignore
         supported_kind.set_expression_duration('STATIC_FLUENTS_IN_DURATIONS')  # type: ignore
