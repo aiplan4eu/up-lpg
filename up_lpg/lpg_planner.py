@@ -4,6 +4,7 @@ import os
 import sys
 import tempfile
 import unified_planning as up
+from fractions import Fraction
 from unified_planning.model import ProblemKind, AbstractProblem
 from unified_planning.plans import PlanKind, Plan
 from unified_planning.engines import PlanGenerationResult, PlanGenerationResultStatus
@@ -24,6 +25,8 @@ credits = Credits('LPG',
 lpg_os = {'win32':'winlpg.exe',
           'linux': 'lpg'}
 
+LPG_EPSILON = 0.00025
+
 class LPGEngine(PDDLPlanner):
 
     def __init__(self):
@@ -38,8 +41,8 @@ class LPGEngine(PDDLPlanner):
         base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]), '-o', domain_filename, '-f', problem_filename, '-n', '1', '-out', plan_filename]  + self._options
         return base_command
     
-    def  _get_engine_epsilon(self, new_epsilon:float):
-        self._options.extend(['-t', str(new_epsilon)])
+    def  _get_engine_epsilon(self) -> Optional[Fraction]:
+        return LPG_EPSILON
 
     def _plan_from_file(self, problem: 'up.model.Problem', plan_filename: str, get_item_named: Callable[[str],
             Union[
