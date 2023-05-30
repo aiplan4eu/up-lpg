@@ -10,7 +10,7 @@ from unified_planning.plans import PlanKind, Plan
 from unified_planning.engines import PlanGenerationResult, PlanGenerationResultStatus
 from unified_planning.engines import PDDLPlanner, Credits, LogMessage, PlanGenerationResult
 from unified_planning.exceptions import UPException
-from unified_planning.engines.mixins import AnytimePlannerMixin
+from unified_planning.engines.pddl_anytime_planner import PDDLAnytimePlanner
 from unified_planning.engines.mixins.plan_repairer import PlanRepairerMixin
 from typing import Callable, Optional, List, Union, Iterator, IO
 
@@ -131,7 +131,7 @@ class LPGEngine(PDDLPlanner):
     def get_credits(**kwargs) -> Optional['Credits']:
         return credits
 
-class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
+class LPGAnytimeEngine(LPGEngine, PDDLAnytimePlanner):
 
     def __init__(self):
         super().__init__()
@@ -141,7 +141,7 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
     def name(self) -> str:
         return 'lpg-anytime'
 
-    def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
+    def _get_anytime_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
         base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]),
         '-o', domain_filename,
         '-f', problem_filename,
@@ -197,7 +197,7 @@ class LPGAnytimeEngine(LPGEngine, AnytimePlannerMixin):
 
         def run():
             writer: IO[str] = Writer(output_stream, q, self)
-            res = self._solve(problem, output_stream=writer)
+            res = self._solve(problem, output_stream=writer, anytime=True)
             q.put(res)
 
         try:

@@ -13,8 +13,6 @@ EXECUTABLES = {
     ("Linux", "x86_64"): "lpg",
     ("Windows", "x86_64"): "winlpg.exe",
     ("Windows", "AMD64"): "winlpg.exe",
-    # ("Windows", "x86"): "aries_windows_x86.exe",
-    # ("Windows", "aarch32"): "aries_windows_aarch32.exe",
 }
 
 executable = EXECUTABLES[arch]
@@ -39,7 +37,7 @@ class BinaryDistribution(Distribution):
         return False
 
 setup(name='up_lpg',
-      version='0.0.6.4',
+      version='0.0.7',
       description='up_lpg',
       long_description=long_description,
       long_description_content_type ="text/markdown",

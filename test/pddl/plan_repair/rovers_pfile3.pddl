@@ -1,5 +1,5 @@
-(define (problem roverprob3726_problem_problem-problem)
- (:domain roverprob3726_problem_problem-domain)
+(define (problem roverprob3726_problem_problem_problem-problem)
+ (:domain roverprob3726_problem_problem_problem-domain)
  (:objects
    rover0 rover1 - rover
    waypoint0 waypoint1 waypoint2 waypoint3 - waypoint
