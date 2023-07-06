@@ -2,6 +2,7 @@ import unified_planning
 from unified_planning.shortcuts import *
 from unified_planning.io.pddl_writer import PDDLWriter
 from unified_planning.io.pddl_reader import PDDLReader
+from unified_planning.engines.compilers.grounder import Grounder
 from unittest import TestCase
 
 class LPGtest(TestCase):
@@ -88,6 +89,28 @@ class LPGtest(TestCase):
             with PlanValidator(problem_kind=problem.kind, plan_kind=new_plan.kind) as validator:
                 res = validator.validate(problem, new_plan)
                 self.assertEqual(res.status, up.engines.ValidationResultStatus.VALID)
+                
+    def test_plan_repair_with_grounded_plan(self):
+        reader = PDDLReader()
+        domain_filename = sys.path[0] + '/pddl/plan_repair/blocksworld/domain.pddl'
+        problem_filename = sys.path[0] + '/pddl/plan_repair/blocksworld/p017613.pddl'
+        bad_plan_filename = sys.path[0] + '/pddl/plan_repair/blocksworld/plan_p017613.pddl'
+        problem = reader.parse_problem(domain_filename, problem_filename)
 
+        problem = Grounder().compile(problem).problem
+        bad_plan = reader.parse_plan(problem,bad_plan_filename)
+
+    
+        with PlanValidator(problem_kind=problem.kind, plan_kind=bad_plan.kind) as validator:
+            res = validator.validate(problem, bad_plan)
+            self.assertEqual(res.status, up.engines.ValidationResultStatus.INVALID)
+
+        problem.environment.factory.add_engine(name = "lpg-repairer", module_name = "up_lpg.lpg_planner", class_name = "LPGPlanRepairer")
+
+        with PlanRepairer(name='lpg-repairer') as repairer:
+            new_plan = repairer.repair(problem, bad_plan).plan
+            with PlanValidator(problem_kind=problem.kind, plan_kind=new_plan.kind) as validator:
+                res = validator.validate(problem, new_plan)
+                self.assertEqual(res.status, up.engines.ValidationResultStatus.VALID)
 
 

@@ -244,7 +244,10 @@ class LPGPlanRepairer(LPGEngine, PlanRepairerMixin):
         with open(out, "w") as f:
             for i, act in enumerate(plan.actions):
                 parameters = str(act.actual_parameters).replace('(','').replace(')','').replace(',','')
-                f.write(f'{i}:   ({act.action.name} {parameters})  [1]\n')
+                if parameters == '':
+                    f.write(f'{i}:   ({act.action.name})  [1]\n')
+                else:
+                    f.write(f'{i}:   ({act.action.name} {parameters})  [1]\n')
 
     @staticmethod
     def supports_plan(plan_kind: "up.plans.PlanKind") -> bool:
