@@ -27,19 +27,23 @@ lpg_os = {'win32':'winlpg.exe',
 
 LPG_EPSILON = 0.00025
 
-class LPGEngine(PDDLPlanner):
+class LPGEngine(PDDLPlanner): 
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super().__init__(needs_requirements=False)
-        self._options = []
+        self.parameter = []
+        for param, val in kwargs.items():
+            self.parameter.append(str(param))
+            if val != '':
+                self.parameter.append(str(val))
 
     @property
     def name(self) -> str:
         return 'lpg'
 
     def _get_cmd(self, domain_filename: str, problem_filename: str, plan_filename: str) -> List[str]:
-        base_command = [pkg_resources.resource_filename(__name__, lpg_os[sys.platform]), '-o', domain_filename, '-f', problem_filename, '-n', '1', '-out', plan_filename]  + self._options
-        return base_command
+            base_command = pkg_resources.resource_filename(__name__, lpg_os[sys.platform]), '-o', domain_filename, '-f', problem_filename, '-n', '1', '-out', plan_filename, *self.parameter
+            return base_command
 
     def  _get_engine_epsilon(self) -> Optional[Fraction]:
         return LPG_EPSILON
