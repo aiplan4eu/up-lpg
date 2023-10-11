@@ -37,12 +37,12 @@ class BinaryDistribution(Distribution):
         return False
 
 setup(name='up_lpg',
-      version='0.0.7.3',
+      version='0.0.7.4',
       description='up_lpg',
       long_description=long_description,
       long_description_content_type ="text/markdown",
       author='UNIBS Team',
-      author_email='enrico.scala@unibs.it',
+      author_email="ivan.serina@unibs.it",
       packages=["up_lpg"],
       package_data={"up_lpg": [executable]},
       distclass=BinaryDistribution,
