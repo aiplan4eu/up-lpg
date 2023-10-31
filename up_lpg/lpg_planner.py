@@ -150,7 +150,7 @@ class LPGAnytimeEngine(LPGEngine, PDDLAnytimePlanner):
         '-o', domain_filename,
         '-f', problem_filename,
         '-n', '1000',
-        '-noout'] + self._options
+        '-out', plan_filename] + self._options
         return base_command
 
     def _get_solutions(
