@@ -77,7 +77,7 @@ class LPGEngine(PDDLPlanner):
                     if tt:
                         start = re.match(r'^([\d.]+):', line).group(1)
                         dur = re.match(r'^[\d.]+:\s*\(\s*[\w?-]+((\s+[\w?-]+)*)\s*\)\s*\[([\d.]+)\]$', line).group(3)
-                        actions.append((start,up.plans.ActionInstance(action, tuple(parameters)),dur))
+                        actions.append((Fraction(start), up.plans.ActionInstance(action, tuple(parameters)), Fraction(dur)))
                     else:
                         actions.append(up.plans.ActionInstance(action, tuple(parameters)))
                 elif re.match(r'no solution', line):
