@@ -246,12 +246,20 @@ class LPGPlanRepairer(LPGEngine, PlanRepairerMixin):
 
     def plan_to_file(self, plan: Plan, out: IO[str]):
         with open(out, "w") as f:
-            for i, act in enumerate(plan.actions):
-                parameters = str(act.actual_parameters).replace('(','').replace(')','').replace(',','')
-                if parameters == '':
-                    f.write(f'{i}:   ({act.action.name})  [1]\n')
+            for i, act in enumerate(plan._actions):
+                if(plan.kind == PlanKind.TIME_TRIGGERED_PLAN):
+                    start = act[0]
+                    duration = act[2]
+                    action = act[1].action.name
                 else:
-                    f.write(f'{i}:   ({act.action.name} {parameters})  [1]\n')
+                    start = i
+                    duration = 1
+                    action = act.action.name
+                parameters = str(action).replace('(','').replace(')','').replace(',','')
+                if parameters == '':
+                    f.write(f'{start}:   ({action})  [{duration}]\n')
+                else:
+                    f.write(f'{start}:   ({action} {parameters})  [{duration}]\n')
 
     @staticmethod
     def supports_plan(plan_kind: "up.plans.PlanKind") -> bool:
