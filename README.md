@@ -37,6 +37,32 @@ If you need an older version, you can install it with:
 pip install up-lpg==<version number>
 ```
 
+You can test it using:
+```
+python up_test_cases/report.py lpg lpg-anytime lpg-repairer 
+```
+
+## Usage
+
+### Solving a planning problem
+You can for example call it as follows:
+
+```
+from unified_planning.shortcuts import *
+from unified_planning.engines import PlanGenerationResultStatus
+
+problem = Problem('myproblem')
+# specify the problem (e.g. fluents, initial state, actions, goal)
+...
+
+planner = OneshotPlanner(name="lpg")
+result = planner.solve(problem)
+if result.status == PlanGenerationResultStatus.SOLVED_SATISFICING:
+    print(f'{Found a plan.\nThe plan is: {result.plan}')
+else:
+    print("No plan found.")
+```
+
 
 ### Features:
 - One shot planning
