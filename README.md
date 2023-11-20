@@ -24,7 +24,9 @@ pip install unified-planning[lpg]
 If you need several solvers, you can list them all within the brackets.
 
 You can also install the Fast Downward integration separately (in case the current version of unified_planning does not include Fast Downward or you want to add it later to your unified planning installation). After cloning this repository run
-```pip install ./up-lpg```.
+
+```pip install up-lpg```
+
 you get the latest version. 
 
 This repository incudes the LPG binaries compiled for Linux and Windows. The installation has been tested in Ubuntu 20.04.3 LTS and Windows 10 version 22H2.
@@ -42,13 +44,15 @@ pip install up-lpg==<version number>
 - Plan Repairer
 
 
-##LPG Team
+## LPG Team
 
 Current members: Alfonso E. Gerevini , Alessandro Saetti and Ivan Serina
 
 Planning group coordinator: Alfonso E. Gerevini
 
-Undergraduate students (now graduated) previously involved: Marco Lazzaroni, Stefano Orlandi, Valerio Lorini, Fabrizio Morbini, Sergio Spinoni, Alberto Bettini, Paolo Toninelli, Fabrizio Bonfadini, Mauro Vallati.
+PhD students: Mauro Vallati, Alberto Rovertta, Valerio Borelli.
+
+Undergraduate students (now graduated) previously involved: Marco Lazzaroni, Stefano Orlandi, Valerio Lorini, Fabrizio Morbini, Sergio Spinoni, Alberto Bettini, Paolo Toninelli, Fabrizio Bonfadini.
 
 Programmer previouly involved: Maurizio Vitale (for InLPG)
  
