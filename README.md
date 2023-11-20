@@ -23,7 +23,7 @@ pip install unified-planning[lpg]
 
 If you need several solvers, you can list them all within the brackets.
 
-You can also install the Fast Downward integration separately (in case the current version of unified_planning does not include Fast Downward or you want to add it later to your unified planning installation). After cloning this repository run
+You can also install the LPG integration separately (in case the current version of unified_planning does not include LPG or you want to add it later to your unified planning installation). After cloning this repository run
 
 ```pip install up-lpg```
 
