@@ -63,6 +63,8 @@ else:
     print("No plan found.")
 ```
 
+See also the following [notebook](https://github.com/aiplan4eu/up-lpg/blob/master/Notebooks/Unified_Planning_Basics_LPG.ipynb)
+
 
 ### Features:
 - One shot planning
@@ -76,10 +78,10 @@ Current members: Alfonso E. Gerevini , Alessandro Saetti and Ivan Serina
 
 Planning group coordinator: Alfonso E. Gerevini
 
-PhD students: Mauro Vallati, Alberto Rovertta, Valerio Borelli.
+PhD students: Mauro Vallati, Alberto Rovetta, Valerio Borelli.
 
 Undergraduate students (now graduated) previously involved: Marco Lazzaroni, Stefano Orlandi, Valerio Lorini, Fabrizio Morbini, Sergio Spinoni, Alberto Bettini, Paolo Toninelli, Fabrizio Bonfadini.
 
-Programmer previouly involved: Maurizio Vitale (for InLPG)
+Programmer previously involved: Maurizio Vitale (for InLPG)
  
 
