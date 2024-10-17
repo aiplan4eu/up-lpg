@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import platform
-from setuptools import setup, find_packages , Distribution
+from setuptools import setup, find_packages , Distribution, Extension
 
 long_description=\
 """============================================================
@@ -47,5 +47,6 @@ setup(name='up_lpg',
       package_data={"up_lpg": [executable]},
       distclass=BinaryDistribution,
       include_package_data=True,
+      data_files=[('platlib', [f'up_lpg/{executable}'])],
       cmdclass={'bdist_wheel': bdist_wheel},
       license='APACHE')
