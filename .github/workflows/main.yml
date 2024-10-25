@@ -18,8 +18,9 @@ jobs:
           python-version: 3.8  # Usa la versione 3.8 per migliore compatibilità su Windows
 
       - name: Set cibuildwheel options
+        shell: pwsh
         run: |
-          export CIBW_SKIP="cp37-win32"  # Salta CPython 3.7 32 bit su Windows
+          $env:CIBW_SKIP="cp37-win32"  # Salta CPython 3.7 32 bit su Windows
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel
