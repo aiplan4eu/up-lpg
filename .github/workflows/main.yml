@@ -14,12 +14,18 @@ jobs:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-python@v3
+        with:
+          python-version: 3.8  # Usa la versione 3.8 per migliore compatibilità su Windows
+
+      - name: Set cibuildwheel options
+        run: |
+          export CIBW_SKIP="cp37-win32"  # Salta CPython 3.7 32 bit su Windows
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.11.2
+        run: python -m pip install cibuildwheel
 
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir dist
+        run: python -m cibuildwheel --output-dir dist --verbose
 
       - uses: actions/upload-artifact@v3
         with:
