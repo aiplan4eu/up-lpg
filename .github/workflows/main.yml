@@ -11,9 +11,9 @@ jobs:
         os: [windows-2022]
 
     steps:
-      - uses: actions/checkout
+      - uses: actions/checkout@master
 
-      - uses: actions/setup-python
+      - uses: actions/setup-python@master
         with:
           python-version: 3.8  # Usa la versione 3.8 per migliore compatibilità su Windows
 
@@ -28,7 +28,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir dist
 
-      - uses: actions/upload-artifact
+      - uses: actions/upload-artifact@master
         with:
           name: windows-wheel
           path: dist/*.whl
