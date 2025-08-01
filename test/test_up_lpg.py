@@ -1,3 +1,4 @@
+import pathlib
 import unified_planning
 from unified_planning.shortcuts import *
 from unified_planning.io.pddl_writer import PDDLWriter
@@ -38,8 +39,8 @@ class LPGtest(TestCase):
 
     def test_plan_not_found(self):
         reader = PDDLReader()
-        domain_filename = sys.path[0] + "/pddl/sailing_domain.pddl"
-        problem_filename = sys.path[0] + "/pddl/sailing_3_3_1229.pddl"
+        domain_filename = str(pathlib.Path(__file__).parent / "pddl" / "sailing_domain.pddl")
+        problem_filename = str(pathlib.Path(__file__).parent / "pddl" / "sailing_3_3_1229.pddl")
         problem = reader.parse_problem(domain_filename,problem_filename)
         problem.environment.factory.add_engine(name = "lpg", module_name = "up_lpg.lpg_planner", class_name = "LPGEngine")
 
@@ -50,26 +51,26 @@ class LPGtest(TestCase):
 
     def test_anytime(self):
         reader = PDDLReader()
-        domain_filename = sys.path[0] + '/pddl/rovers_domain.pddl'
-        problem_filename = sys.path[0] + '/pddl/rovers_pfile1.pddl'
+        domain_filename = str(pathlib.Path(__file__).parent / 'pddl' / 'rovers_domain.pddl')
+        problem_filename = str(pathlib.Path(__file__).parent / 'pddl' / 'rovers_pfile1.pddl')
         problem = reader.parse_problem(domain_filename,problem_filename)
         problem.add_quality_metric(up.model.metrics.MinimizeSequentialPlanLength())
         problem.environment.factory.add_engine(name = "lpg-anytime", module_name = "up_lpg.lpg_planner", class_name = "LPGAnytimeEngine")
 
         with AnytimePlanner(name='lpg-anytime') as planner:
-                solutions = []
-                for p in planner.get_solutions(problem,4):
-                    if p.plan is not None:
-                        solutions.append(p.plan)
-                        self.assertEqual(p.status.name, 'INTERMEDIATE')
+                solutions = list(planner.get_solutions(problem, 4))
                 self.assertTrue(len(solutions) >= 1)
+                for s in solutions[:-1]:
+                    if s.plan is not None:
+                        self.assertEqual(s.status.name, 'INTERMEDIATE')
+                self.assertEqual(solutions[-1].status.name, 'SOLVED_SATISFICING')
 
 
     def test_plan_repair(self):
         reader = PDDLReader()
-        domain_filename = sys.path[0] + '/pddl/plan_repair/rovers_domain.pddl'
-        problem_filename = sys.path[0] + '/pddl/plan_repair/rovers_pfile3.pddl'
-        bad_plan_filename = sys.path[0] + '/pddl/plan_repair/plan_p.SOL'
+        domain_filename = str(pathlib.Path(__file__).parent / 'pddl' / 'plan_repair' / 'rovers_domain.pddl')
+        problem_filename = str(pathlib.Path(__file__).parent / 'pddl' / 'plan_repair' / 'rovers_pfile3.pddl')
+        bad_plan_filename = str(pathlib.Path(__file__).parent / 'pddl' / 'plan_repair' / 'plan_p.SOL')
         problem = reader.parse_problem(domain_filename, problem_filename)
 
         w = PDDLWriter(problem, False)
@@ -92,9 +93,9 @@ class LPGtest(TestCase):
                 
     def test_plan_repair_with_grounded_plan(self):
         reader = PDDLReader()
-        domain_filename = sys.path[0] + '/pddl/plan_repair/blocksworld/domain.pddl'
-        problem_filename = sys.path[0] + '/pddl/plan_repair/blocksworld/p017613.pddl'
-        bad_plan_filename = sys.path[0] + '/pddl/plan_repair/blocksworld/plan_p017613.pddl'
+        domain_filename = str(pathlib.Path(__file__).parent / 'pddl' / 'plan_repair' / 'blocksworld' / 'domain.pddl')
+        problem_filename = str(pathlib.Path(__file__).parent / 'pddl' / 'plan_repair' / 'blocksworld' / 'p017613.pddl')
+        bad_plan_filename = str(pathlib.Path(__file__).parent / 'pddl' / 'plan_repair' / 'blocksworld' / 'plan_p017613.pddl')
         problem = reader.parse_problem(domain_filename, problem_filename)
 
         problem = Grounder().compile(problem).problem

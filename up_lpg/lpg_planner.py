@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unified_planning as up
 from fractions import Fraction
+from pathlib import Path
 from unified_planning.model import ProblemKind, AbstractProblem
 from unified_planning.plans import PlanKind, Plan
 from unified_planning.engines import PlanGenerationResult, PlanGenerationResultStatus
@@ -67,7 +68,7 @@ class LPGEngine(PDDLPlanner):
             for line in plan.readlines():
                 if re.match(r'^\s*(;.*)?$', line):
                     continue
-                res = re.match(r'^[\d.]+:\s*\(\s*([\w?-]+)((\s+[\w?-]+)*)\s*\)\s*\[.*\]$', line.lower().split(' ;;')[0])
+                res = re.match(r'^[\d.]+:\s*\(\s*([\w?-]+)((\s+[\w?-]+)*)\s*\)\s*\[.*\]', line.lower().split(' ;;')[0])
                 if res:
                     action = get_item_named(res.group(1))
                     parameters = []
@@ -76,7 +77,7 @@ class LPGEngine(PDDLPlanner):
                         parameters.append(problem.environment.expression_manager.ObjectExp(p_correct))
                     if tt:
                         start = re.match(r'^([\d.]+):', line).group(1)
-                        dur = re.match(r'^[\d.]+:\s*\(\s*[\w?-]+((\s+[\w?-]+)*)\s*\)\s*\[([\d.]+)\]$', line).group(3)
+                        dur = re.match(r'^[\d.]+:\s*\(\s*[\w?-]+((\s+[\w?-]+)*)\s*\)\s*\[([\d.]+)\]', line).group(3)
                         actions.append((Fraction(start), up.plans.ActionInstance(action, tuple(parameters)), Fraction(dur)))
                     else:
                         actions.append(up.plans.ActionInstance(action, tuple(parameters)))
@@ -177,19 +178,16 @@ class LPGAnytimeEngine(LPGEngine, PDDLAnytimePlanner):
                 self._os = os
                 self._q = q
                 self._engine = engine
-                self._plan = []
-                self._storing = False
 
             def write(self, txt: str):
                 if self._os is not None:
                     self._os.write(txt)
                 for l in txt.splitlines():
-                    if '   Time: (ACTION) [action Duration; action Cost]' in l:
-                        self._storing = True
-                    elif 'METRIC_VALUE' in l or 'Solution number:' in l and self._storing:
-                        plan_str = '\n'.join(self._plan)
-                        plan = self._engine._plan_from_str(
-                            problem, plan_str, self._engine._writer.get_item_named
+                    plan_file_match = re.match(r'^\s*Plan file:\s*(.*?)\.SOL', l)
+                    if plan_file_match:
+                        plan_file = plan_file_match.group(1) + '.SOL'
+                        plan = self._engine._plan_from_file(
+                            problem, plan_file, self._engine._writer.get_item_named
                         )
                         res = PlanGenerationResult(
                             PlanGenerationResultStatus.INTERMEDIATE,
@@ -197,10 +195,6 @@ class LPGAnytimeEngine(LPGEngine, PDDLAnytimePlanner):
                             engine_name=self._engine.name,
                         )
                         self._q.put(res)
-                        self._plan = []
-                        self._storing = False
-                    elif self._storing and l:
-                        self._plan.append(l.split(':')[1].split('[')[0])
 
         def run():
             writer: IO[str] = Writer(output_stream, q, self)
