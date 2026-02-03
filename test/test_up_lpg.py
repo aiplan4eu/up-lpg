@@ -3,6 +3,7 @@ from unified_planning.shortcuts import *
 from unified_planning.io.pddl_writer import PDDLWriter
 from unified_planning.io.pddl_reader import PDDLReader
 from unified_planning.engines.compilers.grounder import Grounder
+from unified_planning.engines import PlanGenerationResultStatus
 from unittest import TestCase
 
 class LPGtest(TestCase):
@@ -58,10 +59,13 @@ class LPGtest(TestCase):
 
         with AnytimePlanner(name='lpg-anytime') as planner:
                 solutions = []
-                for p in planner.get_solutions(problem,4):
+                for p in planner.get_solutions(problem,5):
                     if p.plan is not None:
                         solutions.append(p.plan)
-                        self.assertEqual(p.status.name, 'INTERMEDIATE')
+                        self.assertIn(p.status, [
+                                PlanGenerationResultStatus.INTERMEDIATE, 
+                                PlanGenerationResultStatus.TIMEOUT
+                        ])
                 self.assertTrue(len(solutions) >= 1)
 
 

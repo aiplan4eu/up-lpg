@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unified_planning as up
 from fractions import Fraction
+from unified_planning.io.pddl_writer import PDDLWriter
 from unified_planning.model import ProblemKind, AbstractProblem
 from unified_planning.plans import PlanKind, Plan
 from unified_planning.engines import PlanGenerationResult, PlanGenerationResultStatus
@@ -19,8 +20,8 @@ credits = Credits('LPG',
                   'ivan.serina@unibs.it',
                   'https://lpg.unibs.it',
                   '<license>',
-                  'LPG is a planner based on local search and planning graphs.',
-                  'LPG (Local search for Planning Graphs) is a planner based on local search and planning graphs.')
+                  'LPG is a planner based on local search and planning graphs. Require Time Limit',
+                  'LPG (Local search for Planning Graphs) is a planner based on local search and planning graphs. Require Time Limit',)
 
 lpg_os = {'win32':'winlpg.exe',
           'linux': 'lpg'}
@@ -156,72 +157,30 @@ class LPGAnytimeEngine(LPGEngine, PDDLAnytimePlanner):
         '-out', plan_filename] + self._options
         return base_command
 
-    def _get_solutions(
-        self,
-        problem: 'up.model.AbstractProblem',
-        timeout: Optional[float] = None,
-        output_stream: Optional[IO[str]] = None,
-    ) -> Iterator['up.engines.results.PlanGenerationResult']:
-        import threading
-        import queue
-
-        q: queue.Queue = queue.Queue()
-
-        if timeout is not None:
-            self._options.extend(['-cputime', str(timeout)])
-        else:
-            self._options.extend(['-cputime', '1200'])
-
-        class Writer(up.AnyBaseClass):
-            def __init__(self, os, q, engine):
-                self._os = os
-                self._q = q
-                self._engine = engine
-                self._plan = []
-                self._storing = False
-
-            def write(self, txt: str):
-                if self._os is not None:
-                    self._os.write(txt)
-                for l in txt.splitlines():
-                    if '   Time: (ACTION) [action Duration; action Cost]' in l:
-                        self._storing = True
-                    elif 'METRIC_VALUE' in l or 'Solution number:' in l and self._storing:
-                        plan_str = '\n'.join(self._plan)
-                        plan = self._engine._plan_from_str(
-                            problem, plan_str, self._engine._writer.get_item_named
-                        )
-                        res = PlanGenerationResult(
-                            PlanGenerationResultStatus.INTERMEDIATE,
-                            plan=plan,
-                            engine_name=self._engine.name,
-                        )
-                        self._q.put(res)
-                        self._plan = []
-                        self._storing = False
-                    elif self._storing and l:
-                        self._plan.append(l.split(':')[1].split('[')[0])
-
-        def run():
-            writer: IO[str] = Writer(output_stream, q, self)
-            res = self._solve(problem, output_stream=writer, anytime=True)
-            q.put(res)
-
-        try:
-            t = threading.Thread(target=run, daemon=True)
-            t.start()
-            status = PlanGenerationResultStatus.INTERMEDIATE
-            while status == PlanGenerationResultStatus.INTERMEDIATE:
-                res = q.get()
-                status = res.status
-                yield res
-        finally:
-            if self._process is not None:
-                try:
-                    self._process.kill()
-                except OSError:
-                    pass  # This can happen if the process is already terminated
-            t.join()
+    def _parse_planner_output(self, writer: "Writer", planner_output: str):
+        """
+        This method takes the output stream of a PDDLEngine and modifies the fields of the given
+        writer.
+        Those fields are:
+        - writer.problem: The Problem being solved by the anytime planner.
+        - writer.storing: Flag defining if the parsing is storing intermediate parts of a plan or not.
+        - writer.res_queue: The Queue of PlanGenerationResult where every generated result must be added.
+        - writer.current_plan: The List of ActionInstances (or Tuple[Fraction, ActionInstance, Optional[Fraction]]
+            for temporal problems) that currently contains the plan being parsed; must be set to an empty when the
+            plan is generated and added to the Queue.
+        - writer.last_plan_found: The last complete plan found and parsed.
+        """
+        assert isinstance(self._writer, PDDLWriter)
+        for l in planner_output.splitlines():
+            if '     Plan file:       ' in l:
+                plan = writer._engine._plan_from_file(writer.problem, l.split(' ')[13], writer._engine._writer.get_item_named)
+                res = PlanGenerationResult(
+                    PlanGenerationResultStatus.INTERMEDIATE,
+                    plan=plan,
+                    engine_name=self.name,
+                )
+                writer.res_queue.put(res)
+                writer.current_plan = []
 
     @staticmethod
     def ensures(anytime_guarantee: up.engines.AnytimeGuarantee) -> bool:
